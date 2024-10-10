@@ -1,0 +1,9 @@
+# Ignore Visual Studio Code specific files
+.vscode/
+.vscode/*
+.history/
+.history/*
+# Ignore Python specific files
+__pycache__/
+__pycache__/*
+*.pyc
