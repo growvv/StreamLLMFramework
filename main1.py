@@ -4,8 +4,8 @@ from stream_manager import StreamManager
 from handler import text_handler, image_handler
 
 # 创建Agents
-agent1 = Agent(name="DataAnalyzer", llm_type="zhipu")
-agent2 = Agent(name="MaintanceAnalyzer", llm_type="zhipu")
+agent1 = Agent(name="DataAnalyzer", llm_type="qwen")
+agent2 = Agent(name="MaintanceAnalyzer", llm_type="qwen")
 
 stream_manager = StreamManager()
 text_stream = stream_manager.create_stream("text")

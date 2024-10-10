@@ -3,13 +3,21 @@ from stream_manager import StreamManager
 from agent import Agent
 from handler import text_handler, image_handler, forwarding_handler_factory, agent_handler_factory
 from agent_store import AgentStore
+from typing import Dict
+from flask_socketio import SocketIO
 
 # DSL解析器
 class DSLParser:
-    def __init__(self, config_path: str = "config.yaml"):
+    def __init__(self, config_path: str = "config.yaml", stream_manager: StreamManager = None, agent_store: AgentStore = None):
         self.config_path = config_path
-        self.stream_manager = StreamManager()
-        self.agent_store = AgentStore()
+        if stream_manager:
+            self.stream_manager = stream_manager
+        else:
+            self.stream_manager = StreamManager()
+        if agent_store:
+            self.agent_store = agent_store
+        else:
+            self.agent_store = AgentStore()
         self.handlers_map = {
             "text_handler": text_handler,
             "image_handler": image_handler,
@@ -55,7 +63,8 @@ class DSLParser:
 
         # 创建Agents
         for agent_conf in config.get('agents', []):
-            agent = Agent(name=agent_conf['name'], llm_type=agent_conf['llm_type'])
+            # agent = Agent(name=agent_conf['name'], llm_type=agent_conf['llm_type'], socketio=self.socketio)
+            agent = self.agent_store.create_agent(name=agent_conf['name'], llm_type=agent_conf['llm_type'])
             self.agent_store.add_agent(agent)
 
         # 注册Agent Handlers
@@ -70,6 +79,10 @@ class DSLParser:
                 if stream:
                     handler = agent_handler_factory(agent)  # 根据配置选择同步或异步处理器
                     stream.register_handler(handler)
+
+    def update_config(self, new_config: Dict):
+        # 这里可以实现动态更新配置的逻辑
+        pass
 
     def get_stream_manager(self) -> StreamManager:
         return self.stream_manager

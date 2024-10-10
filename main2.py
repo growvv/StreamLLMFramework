@@ -15,9 +15,9 @@ if __name__ == "__main__":
     analytics_stream = stream_manager.create_stream("analytics_stream")  # 新增一个分析流
 
     # 创建 Agents
-    agent1 = Agent(name="Agent1", llm_type="zhipu")
-    agent2 = Agent(name="Agent2", llm_type="zhipu")
-    agent3 = Agent(name="Agent3", llm_type="zhipu")  # 新增一个Agent
+    agent1 = Agent(name="Agent1", llm_type="qwen")
+    agent2 = Agent(name="Agent2", llm_type="qwen")
+    agent3 = Agent(name="Agent3", llm_type="qwen")  # 新增一个Agent
 
     # 添加 Agents 到 AgentStore
     agent_store.add_agent(agent1)

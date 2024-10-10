@@ -1,14 +1,16 @@
 from typing import Callable, Any, List
+from flask_socketio import SocketIO
 
 class Stream:
     """
     StreamManager 负责管理所有的 Stream 实例，包括创建、查找和删除 Stream。
     它确保不同的 Stream 能够被有效地组织和访问。
     """
-    def __init__(self, name: str):
+    def __init__(self, name: str, socketio: SocketIO):
         self.name = name
         self.handlers: List[Callable[[Any], None]] = []
         self.connected_streams: List['Stream'] = []
+        self.socketio = socketio
 
     def register_handler(self, handler: Callable[[Any], None]):
         self.handlers.append(handler)
@@ -29,12 +31,30 @@ class Stream:
             print(f"Stream {self.name} emitting data: {data}")
         else:
             print(f"Stream {self.name} emitting data: <unknown>")
+
+        # 向前端发送数据流事件
+        if self.socketio:
+            self.socketio.emit('data_flow', {
+                'stream': self.name,
+                'data': str(data),
+                'action': 'emit'
+            })
+
         for handler in self.handlers:
             handler(data)
 
         # 将数据传递到连接的流 (和 forward功能有重叠)
         for stream in self.connected_streams:
             print(f"Stream {self.name} forwarding data to stream {stream.name}")
+
+            if self.socketio:
+                self.socketio.emit('data_flow', {
+                    'stream': self.name,
+                    'target_stream': stream.name,
+                    'data': str(data),
+                    'action': 'forward'
+                })
+
             stream.emit(data)
 
     def clear_handlers(self):
