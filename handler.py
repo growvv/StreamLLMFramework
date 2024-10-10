@@ -3,6 +3,7 @@ import io
 from stream_manager import StreamManager
 from typing import Any, Callable
 from stream import Stream
+from agent import Agent
 
 """
 为了支持多模态数据处理，Stream 可以根据数据类型将数据分发给不同的 Handler。
@@ -23,6 +24,11 @@ def forwarding_handler_factory(target_stream: Stream) -> Callable[[Any], None]:
         target_stream.emit(data)
     return handler
 
+def agent_handler_factory(agent: Agent) -> Callable[[Any], None]:
+    def handler(data: Any):
+        agent.process_data(data)
+    handler.__name__ = f"agent_handler_{agent.name}"
+    return handler
 
 if __name__ == "__main__":
     stream_manager = StreamManager()

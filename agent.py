@@ -1,7 +1,6 @@
 from openai import OpenAI
 from llm import LLMQueryClient
 from typing import Any
-import asyncio
 
 
 class Agent:
@@ -15,7 +14,6 @@ class Agent:
 
     def process_data(self, data: Any):
         prompt = self.generate_prompt(data)
-        # response = asyncio.run(self.query_llm(prompt))
         response = self.query_llm(prompt)
         self.handle_response(response)
 
@@ -28,13 +26,12 @@ class Agent:
         else:
             return f"收到数据：{data}"
 
-    async def query_llm(self, prompt: str) -> str:
+    def query_llm(self, prompt: str) -> str:
         print(f"Agent {self.name} asynchronously querying LLM with prompt: {prompt}")
-        loop = asyncio.get_event_loop()
 
         try:
             client = LLMQueryClient(provider=self.llm_type)
-            response = await loop.run_in_executor(None, lambda: client.query_llm(prompt))
+            response = client.query_llm(prompt)
             return response
         except Exception as e:
             return f"An error occurred: {e}"

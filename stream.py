@@ -22,7 +22,13 @@ class Stream:
             print(f"Handler {handler.__name__} not found in stream {self.name}")
 
     def emit(self, data: Any):
-        print(f"Stream {self.name} emitting data: {data}")
+        # 优化输出
+        if isinstance(data, bytes):
+            print(f"Stream {self.name} emitting data: <bytes>")
+        elif isinstance(data, str):
+            print(f"Stream {self.name} emitting data: {data}")
+        else:
+            print(f"Stream {self.name} emitting data: <unknown>")
         for handler in self.handlers:
             handler(data)
 
