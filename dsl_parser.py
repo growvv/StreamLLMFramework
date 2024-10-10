@@ -6,7 +6,7 @@ from agent_store import AgentStore
 
 # DSL解析器
 class DSLParser:
-    def __init__(self, config_path: str):
+    def __init__(self, config_path: str = "config.yaml"):
         self.config_path = config_path
         self.stream_manager = StreamManager()
         self.agent_store = AgentStore()
@@ -24,8 +24,8 @@ class DSLParser:
         # 创建Streams
         # 遍历配置中的 streams，为每个流创建 Stream 实例，并注册相应的处理器。
         for stream_conf in config.get('streams', []):
-            if not self.stream_manager.get_stream(stream_conf['name']):
-                stream = self.stream_manager.create_stream(stream_conf['name'])
+            stream = self.stream_manager.get_stream(stream_conf['name'])
+
             for handler_conf in stream_conf.get('handlers', []):
                 handler_type = handler_conf['type']
                 if handler_type == "agent_handler":
@@ -44,6 +44,14 @@ class DSLParser:
                         stream.register_handler(handler)
                     else:
                         print(f"Unknown handler type: {handler_type}")
+            
+            # 处理 connections
+            for connection in stream_conf.get('connections', []):
+                target_stream_name = connection['target']
+                target_stream = self.stream_manager.get_stream(target_stream_name)
+                stream.connect_stream(target_stream)
+                # target_stream.connect_stream(stream)  # 双向连接, 会导致数据循环
+
 
         # 创建Agents
         for agent_conf in config.get('agents', []):

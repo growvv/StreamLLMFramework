@@ -18,6 +18,8 @@ class StreamManager:
         return stream
 
     def get_stream(self, name: str) -> Stream:
+        if name not in self.streams:
+            return self.create_stream(name)
         return self.streams.get(name)
 
     def delete_stream(self, name: str):

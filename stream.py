@@ -32,6 +32,11 @@ class Stream:
         for handler in self.handlers:
             handler(data)
 
+        # 将数据传递到连接的流 (和 forward功能有重叠)
+        for stream in self.connected_streams:
+            print(f"Stream {self.name} forwarding data to stream {stream.name}")
+            stream.emit(data)
+
     def clear_handlers(self):
         self.handlers.clear()
         print(f"All handlers cleared from stream {self.name}")

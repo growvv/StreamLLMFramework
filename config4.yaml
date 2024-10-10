@@ -1,0 +1,15 @@
+streams:
+  - name: text_stream
+    handlers:
+      - type: text_handler
+      - type: agent_handler
+    connections:
+      - target: analytics_stream
+
+  - name: analytics_stream
+
+agents:
+  - name: Agent1
+    llm_type: "qwen"
+    subscribed_streams:
+      - analytics_stream
