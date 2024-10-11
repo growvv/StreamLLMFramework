@@ -195,4 +195,4 @@ def handle_disconnect():
 # 运行Flask应用
 if __name__ == "__main__":
     # 使用eventlet作为异步模式
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=12345)

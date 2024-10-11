@@ -35,7 +35,7 @@
         <div class="form-section">
             <h3>添加 Agent</h3>
             <input type="text" id="agent_name" placeholder="Agent 名称">
-            <input type="text" id="agent_key" placeholder="LLM API Key">
+            <input type="text" id="agent_key" placeholder="LLM TYPE">
             <input type="text" id="agent_streams" placeholder="订阅 Streams (逗号分隔)">
             <button onclick="addAgent()">添加 Agent</button>
         </div>
@@ -233,7 +233,7 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     name: agentName,
-                    llm_api_key: agentKey,
+                    llm_type: agentKey,
                     subscribed_streams: agentStreams
                 })
             })
