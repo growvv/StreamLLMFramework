@@ -19,7 +19,7 @@ stream_manager = StreamManager(socketio)
 agent_store = AgentStore(socketio)
 
 # 定义 DSLParser 实例
-dsl_parser = DSLParser(config_path="config.yaml", stream_manager=stream_manager, agent_store=agent_store)
+dsl_parser = DSLParser(config_path="config/industry_template.yaml", stream_manager=stream_manager, agent_store=agent_store)
 
 # 解析初始配置
 dsl_parser.parse()
@@ -193,8 +193,6 @@ def emit_data():
 @app.route('/load_graph', methods=['GET'])
 def load_graph():
     nodes, links = dsl_parser.parse()
-    # print(nodes)
-    # print(links)
     # nodes_name = [node.name for node in nodes]
     # links_name = [(link[0].name, link[1].name) for link in links]
     return jsonify({'status': 'success', 'nodes': nodes, 'links': links})

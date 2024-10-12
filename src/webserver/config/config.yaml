@@ -20,6 +20,7 @@ agents:
   - image_stream
   - text_stream
   - livestream
+  - '11'
 - name: Agent2
   category: AssistAgent
   llm_type: qwen
@@ -44,8 +45,4 @@ agents:
   llm_type: aa
   subscribed_streams:
   - text_stream
-- name: '11'
-  category: ImageHandlerAgent
-  llm_type: qq
-  subscribed_streams:
-  - analytics_stream
+  - livestream

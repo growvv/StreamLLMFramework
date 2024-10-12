@@ -1,5 +1,5 @@
-from streamllm.framework.stream_manager import StreamManager
-from streamllm.framework.handler_agent import TextHandlerAgent, ImageHandlerAgent
+from streamllm import StreamManager
+from streamllm import TextHandlerAgent, ImageHandlerAgent
 
 if __name__ == "__main__":
     stream_manager = StreamManager()

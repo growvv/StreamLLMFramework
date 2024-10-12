@@ -61,7 +61,7 @@ class PromptAgent(Agent):
             return f"收到数据：{data}"
 
     def query_llm(self, prompt: str) -> str:
-        print(f"Agent {self.name} asynchronously querying LLM with prompt: {prompt}")
+        print(f"Agent {self.name} querying LLM with prompt: {prompt}")
 
         try:
             response = self.client.query_llm(prompt)

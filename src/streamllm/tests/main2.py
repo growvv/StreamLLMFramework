@@ -1,7 +1,7 @@
-from streamllm.framework.stream_manager import StreamManager
-from streamllm.framework.agent import AssistAgent
-from streamllm.framework.agent_store import AgentStore
-from streamllm.framework.handler_agent import TextHandlerAgent, ImageHandlerAgent, ForwardingHandlerAgent
+from streamllm import StreamManager
+from streamllm import AssistAgent
+from streamllm import AgentStore
+from streamllm import TextHandlerAgent, ImageHandlerAgent, ForwardingHandlerAgent
 
 # 使用框架
 if __name__ == "__main__":

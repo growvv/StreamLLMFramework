@@ -1,7 +1,7 @@
 from .agent import Agent, AssistAgent
 from typing import List
 from flask_socketio import SocketIO
-from .handler_agent import TextHandlerAgent, ImageHandlerAgent, LoggingHandlerAgent, DataFilterHandlerAgent, ForwardingHandlerAgent
+from .agent_family.handler_agent import TextHandlerAgent, ImageHandlerAgent, LoggingHandlerAgent, DataFilterHandlerAgent, ForwardingHandlerAgent, AudioHandlerAgent
 
 class AgentStore:
     """
@@ -13,6 +13,7 @@ class AgentStore:
             "AssistAgent", 
             "TextHandlerAgent", 
             "ImageHandlerAgent", 
+            "AudioHandlerAgent",
             "LoggingHandlerAgent", 
             "DataFilterHandlerAgent", 
             "ForwardingHandlerAgent"
@@ -22,7 +23,6 @@ class AgentStore:
     def __create_agent_helper(self, **kwargs) -> Agent:
         name = kwargs.get("name")
         category = kwargs.get("category")
-        print(kwargs)
         if category == "AssistAgent":
             llm_type = kwargs.get("llm_type")
             if llm_type is None:
@@ -34,6 +34,8 @@ class AgentStore:
             return ImageHandlerAgent(name=name, socketio=self.socketio)
         elif category == "LoggingHandlerAgent":
             return LoggingHandlerAgent(name=name, socketio=self.socketio)
+        elif category == "AudioHandlerAgent":
+            return AudioHandlerAgent(name=name, socketio=self.socketio)
         elif category == "DataFilterHandlerAgent":
             keyword = kwargs.get("keyword")
             if keyword is None:

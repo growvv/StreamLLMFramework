@@ -1,0 +1,49 @@
+# built_in_config.yaml
+streams:
+  - name: RawDataStream
+  - name: EquipmentRegistrationStream
+  - name: OperationLogsStream
+  - name: DutyTableStream
+  - name: OperationRecordsStream
+  - name: CleanDataStream
+  - name: TrendAnalysisStream
+  - name: EstimationStream
+  - name: ReportStream
+
+agents:
+  - name: DataCleanerAgent
+    category: AssistAgent
+    llm_type: qwen
+    subscribed_streams:
+      - RawDataStream
+      - EquipmentRegistrationStream
+      - OperationLogsStream
+      - DutyTableStream
+      - OperationRecordsStream
+
+  - name: TrendAnalyzerAgent
+    category: TextHandlerAgent
+    subscribed_streams:
+      - CleanDataStream
+
+  - name: EstimatorAgent
+    category: TextHandlerAgent
+    subscribed_streams:
+      - TrendAnalysisStream
+
+  - name: ReportGeneratorAgent
+    category: TextHandlerAgent
+    subscribed_streams:
+      - EstimationStream
+
+  - name: PredictiveMaintenanceAgent
+    category: TextHandlerAgent
+    subscribed_streams:
+      - OperationLogsStream
+      - EquipmentRegistrationStream
+
+  - name: PersonnelPerformanceAgent
+    category: TextHandlerAgent
+    subscribed_streams:
+      - DutyTableStream
+      - OperationRecordsStream

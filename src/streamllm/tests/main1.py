@@ -1,7 +1,4 @@
-from streamllm.framework.handler_agent import TextHandlerAgent, ImageHandlerAgent
-from streamllm.framework.agent import AssistAgent
-from streamllm.framework.stream_manager import StreamManager
-from streamllm.framework.stream import Stream
+from streamllm import TextHandlerAgent, ImageHandlerAgent, AssistAgent, StreamManager
 
 # 创建Agents
 agent1 = AssistAgent(name="DataAnalyzer", llm_type="qwen")

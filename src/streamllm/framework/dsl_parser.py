@@ -51,7 +51,6 @@ class DSLParser:
         for agent_conf in self.config.get('agents', []):
             agent = self.agent_store.get_agent(agent_conf['name'])
             if not agent:
-                print(agent_conf)
                 agent = self.agent_store.create_agent(**agent_conf)
                 self.nodes.append({'id': agent.name, 'type': 'agent'})
             # self.agent_store.add_agent(agent)
@@ -74,9 +73,7 @@ class DSLParser:
     def update_config(self, part_config: Dict):
         # 检查是否是stream更新
         if "streams" in part_config:
-            print("streams in part_config")
             for new_stream in part_config["streams"]:
-                print("new_stream", new_stream)
                 # 查找是否已有相同名称的stream
                 existing_stream = next((s for s in self.config['streams'] if s['name'] == new_stream['name']), None)
                 if existing_stream:

@@ -17,7 +17,6 @@ class StreamManager:
             return self.streams[name]
         stream = Stream(name, self.socketio)
         self.streams[name] = stream
-        print(f"Stream {name} created.")
         return stream
 
     def get_stream(self, name: str) -> Stream:

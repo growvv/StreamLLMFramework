@@ -1,8 +1,8 @@
 from PIL import Image
 import io
 from typing import Any
-from .stream import Stream
-from .agent import Agent
+from ..stream import Stream
+from ..agent import Agent
 from flask_socketio import SocketIO
 
 """
@@ -31,7 +31,7 @@ class ImageHandlerAgent(Agent):
         except Exception as e:
             print(f"[Image Handler] Failed to process data: {e}")
 
-        self.handle_response(f"Processed image data: {data}")
+        self.handle_response(f"Processed image data: <data>")
 
 class LoggingHandlerAgent(Agent):
     def __init__(self, name: str, socketio : SocketIO = None):
@@ -64,4 +64,23 @@ class ForwardingHandlerAgent(Agent):
         self.target_stream.emit(data)
         self.handle_response(f"Forwarded data to stream {self.target_stream.name}")
 
-__all__ = [ "TextHandlerAgent", "ImageHandlerAgent", "LoggingHandlerAgent", "DataFilterHandlerAgent", "ForwardingHandlerAgent" ]
+class AudioHandlerAgent(Agent):
+    def __init__(self, name: str, socketio : SocketIO = None):
+        super().__init__(name=name, socketio=socketio)
+        self.category = "AudioHandlerAgent"
+
+    def process_data(self, data: bytes):
+        try:
+            # 假设处理音频数据，例如获取音频时长
+            import wave
+            with wave.open(io.BytesIO(data), 'rb') as wf:
+                frames = wf.getnframes()
+                rate = wf.getframerate()
+                duration = frames / float(rate)
+                print(f"[Audio Handler] Received audio with duration: {duration} seconds")
+        except Exception as e:
+            print(f"[Audio Handler] Failed to process data: {e}")
+
+        self.handle_response(f"Processed audio data: {data}")
+
+__all__ = [ "TextHandlerAgent", "ImageHandlerAgent", "LoggingHandlerAgent", "DataFilterHandlerAgent", "ForwardingHandlerAgent", "AudioHandlerAgent" ]
