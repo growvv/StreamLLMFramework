@@ -1,7 +1,7 @@
 from .agent import Agent, AssistAgent
 from typing import List
 from flask_socketio import SocketIO
-
+from .handler_agent import TextHandlerAgent, ImageHandlerAgent, LoggingHandlerAgent, DataFilterHandlerAgent, ForwardingHandlerAgent
 
 class AgentStore:
     """
@@ -9,17 +9,42 @@ class AgentStore:
     """
     def __init__(self, socketio: SocketIO = None):
         self.agents = {}
-        self.agent_categories = ["AssistAgent", "xxAgent"]
+        self.agent_categories = [
+            "AssistAgent", 
+            "TextHandlerAgent", 
+            "ImageHandlerAgent", 
+            "LoggingHandlerAgent", 
+            "DataFilterHandlerAgent", 
+            "ForwardingHandlerAgent"
+        ]
         self.socketio = socketio
 
-    def __create_agent_helper(self, name: str, category: str, **kwargs) -> Agent:
+    def __create_agent_helper(self, **kwargs) -> Agent:
+        name = kwargs.get("name")
+        category = kwargs.get("category")
+        print(kwargs)
         if category == "AssistAgent":
             llm_type = kwargs.get("llm_type")
             if llm_type is None:
                 raise ValueError("llm_type is required for AssistAgent")
             return AssistAgent(name=name, llm_type=llm_type, socketio=self.socketio)
-        elif category == "xxAgent":
-            pass
+        elif category == "TextHandlerAgent":
+            return TextHandlerAgent(name=name, socketio=self.socketio)
+        elif category == "ImageHandlerAgent":
+            return ImageHandlerAgent(name=name, socketio=self.socketio)
+        elif category == "LoggingHandlerAgent":
+            return LoggingHandlerAgent(name=name, socketio=self.socketio)
+        elif category == "DataFilterHandlerAgent":
+            keyword = kwargs.get("keyword")
+            if keyword is None:
+                raise ValueError("keyword is required for DataFilterHandlerAgent")
+            return DataFilterHandlerAgent(name=name, keyword=keyword, socketio=self.socketio)
+        elif category == "ForwardingHandlerAgent":
+            target_stream_name = kwargs.get("target_stream")
+            target_stream = self.get_agent(target_stream_name)
+            if target_stream is None:
+                raise ValueError(f"Target stream {target_stream_name} not found")
+            return ForwardingHandlerAgent(name=name, target_stream=target_stream, socketio=self.socketio)
         else:
             raise ValueError(f"Unknown agent category: {category}")
 
@@ -27,14 +52,13 @@ class AgentStore:
     def get_agent(self, agent_name: str) -> Agent:
         return self.agents.get(agent_name)
 
-    def create_agent(self, name: str, category: str, **kwargs) -> Agent:
-        if name in self.agents:
-            print(f"Agent {name} already exists in the store.")
-            return self.agents.get(name)
+    def create_agent(self, **kwargs) -> Agent:
+        name = kwargs.get("name")
+        category = kwargs.get("category")
         if category not in self.agent_categories:
             raise ValueError(f"Unknown agent category: {category}")
         try:
-            agent = self.__create_agent_helper(name, category, **kwargs)
+            agent = self.__create_agent_helper(**kwargs)
             self.add_agent(agent)
             return agent
         except ValueError as e:
@@ -42,7 +66,6 @@ class AgentStore:
 
     def add_agent(self, agent: Agent):
         if agent.name in self.agents:
-            # raise ValueError(f"Agent {agent.name} already exists in the store.")
             print(f"Agent {agent.name} already exists in the store.")
             return
         self.agents[agent.name] = agent

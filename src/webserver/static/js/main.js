@@ -141,12 +141,57 @@ socket.on('data_flow', function(msg) {
     console.log('Data Flow:', msg);
     // 根据事件更新图表或显示数据流动
     // 示例：高亮相关节点或添加动态链接
+    // 例如，高亮发射和转发的数据流
+    if(msg.action === 'emit') {
+        highlightStream(msg.stream);
+    } else if(msg.action === 'forward') {
+        highlightLink(msg.stream, msg.target_stream);
+    }
 });
+
+function highlightStream(streamName) {
+    node.filter(d => d.id === streamName)
+        .classed('highlight', true)
+        .transition()
+        .duration(3000)
+        .attr('stroke', 'yellow')
+        .attr('stroke-width', 5)
+        .transition()
+        .duration(1000)
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 1.5)
+        .classed('highlight', false);
+}
+
+function highlightLink(source, target) {
+    link.filter(d => d.source.id === source && d.target.id === target)
+        .attr('stroke', 'red')
+        .attr('stroke-width', 5)
+        .transition()
+        .duration(3000)
+        .attr('stroke', '#999')
+        .attr('stroke-width', 2);
+}
+
+function highlightAgent(agentName) {
+    node.filter(d => d.id === agentName)
+        .classed('highlight', true)
+        .transition()
+        .duration(3000)
+        .attr('stroke', 'yellow')
+        .attr('stroke-width', 5)
+        .transition()
+        .duration(1000)
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 1.5)
+        .classed('highlight', false);
+}
 
 socket.on('agent_response', function(msg) {
     console.log('Agent Response:', msg);
     // 在UI中显示Agent的响应
-    alert(`Agent ${msg.agent} 响应: ${msg.response}`);
+    // alert(`Agent ${msg.agent} 响应: ${msg.response}`);
+    highlightAgent(msg.agent);
 });
 
 // 加载All Agents
@@ -208,17 +253,12 @@ function loadStreams() {
 
 // 从配置文件加载Graph
 function loadGraph() {
-    fetch('/load_graph', {
-        method: 'POST',
-    })
+    fetch('/load_graph')
     .then(response => response.json())
     .then(data => {
-        nodes = data.nodes;
-        links = data.links;
-        // updateGraph();
-        // print
-        console.log(nodes);
-        console.log(links);
+        nodes = data.nodes;  // ('text_stream', 'analytics_stream')
+        links = data.links;  // ('text_stream', 'analytics_stream'),
+        updateGraph();
     });
 }
 
@@ -240,6 +280,7 @@ function addStream() {
             addStreamToGraph(streamName);
             // 更新Agent的Stream选项
             loadStreams();
+            updateConfigForStream(streamName);
             alert(`Stream ${streamName} 添加成功`);
         } else {
             alert(`错误: ${data.message}`);
@@ -260,10 +301,10 @@ function addAgent() {
         return;
     }
     var llm_type = document.getElementById('create_agents_llm_type').value;
-    if (!llm_type) {
-        alert('请给指定LLM类型')
-        return;
-    }
+    // if (!llm_type) {
+    //     alert('请给指定LLM类型')
+    //     return;
+    // }
     fetch('/add_agent', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -271,7 +312,6 @@ function addAgent() {
             category: agentCategory,
             name: agentName,  // 可通过界面输入或预设
             llm_type: llm_type, 
-            subscribed_streams: []  // 内置Agent的订阅信息在后端已处理
         })
     })
     .then(response => response.json())
@@ -279,6 +319,7 @@ function addAgent() {
         if (data.status === 'success') {
             addAgentToGraph(agentName);
             loadAgents();
+            updateConfigForAgent(agentName, agentCategory, llm_type);
             alert(`内置 Agent ${agentName} 添加成功`);
         } else {
             alert(`错误: ${data.message}`);
@@ -308,7 +349,8 @@ function subscribeStreamToAgent() {
     .then(data => {
         if (data.status === 'success') {
             addLinkToGraph(agentName, streamName);
-            alert(`Agent ${agentName} 订阅了Stream ${streamName}`);
+            updateConfigForSubscribe(agentName, streamName);
+            // alert(`Agent ${agentName} 订阅了Stream ${streamName}`);
         } else {
             alert(`错误: ${data.message}`);
         }
@@ -336,7 +378,84 @@ function emitData() {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            alert(`数据已发射到Stream ${streamName}`);
+            // alert(`数据已发射到Stream ${streamName}`);
+        } else {
+            alert(`错误: ${data.message}`);
+        }
+    });
+}
+
+// update_config_for_stream
+function updateConfigForStream(streamName, handlers = []) {
+    stream_dict = {
+        "streams": [
+            {
+                "name": streamName,
+                "handlers": handlers
+            }
+        ]
+    }
+    fetch('/update_config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({config: stream_dict})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // alert(`Stream ${streamName} 配置更新成功`);
+        } else {
+            alert(`错误: ${data.message}`);
+        }
+    });
+}
+
+// update_config_for_agent
+function updateConfigForAgent(agentName, category, llm_type) {
+    agent_dict = {
+        "agents": [
+            {
+                "name": agentName,
+                "category": category,
+                "llm_type": llm_type,
+                "subscribed_streams": []
+            }
+        ]
+    }
+    fetch('/update_config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({config: agent_dict})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // alert(`Agent ${agentName} 配置更新成功`);
+        } else {
+            alert(`错误: ${data.message}`);
+        }
+    });
+}
+
+// updateConfigForSubscribe
+function updateConfigForSubscribe(agentName, streamName) {
+    agent_dict = {
+        "agent_subscriptions": [
+            {
+                "name": agentName,
+                "subscribed_streams": [streamName]
+            }
+        ]
+    }
+    fetch('/update_config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({config: agent_dict})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // alert(`Agent ${agentName} 订阅Stream ${streamName} 配置更新成功`);
         } else {
             alert(`错误: ${data.message}`);
         }
@@ -353,5 +472,5 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAgentCategories();
     loadAgents();
     loadStreams();
-    // loadGraph();
+    loadGraph();
 });

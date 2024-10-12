@@ -2,16 +2,26 @@ from openai import OpenAI
 from typing import Any
 from flask_socketio import SocketIO
 from .llm import LLMQueryClient
+from .stream import Stream
 
 class Agent:
-
     def __init__(self, name: str, socketio: SocketIO=None):
-        self.__name__ = "Agent"
+        self.category = "Agent"
         self.name = name
         self.socketio = socketio
+        self.subscribed_streams = []
 
     def process_data(self, data: Any):
         raise NotImplementedError("Subclasses should implement this method")
+    
+    def subscribe(self, stream: Stream):
+        self.subscribed_streams.append(stream)
+        stream.register_handler(self.process_data)
+
+    def unsubscribe(self, stream: Stream):
+        if stream in self.subscribed_streams:
+            self.subscribed_streams.remove(stream)
+            stream.unregister_handler(self.process_data)
     
     def handle_response(self, response: str):
         print(f"Agent {self.name} received response: {response}")
@@ -31,7 +41,7 @@ class PromptAgent(Agent):
     """
     def __init__(self, name: str, llm_type: str, socketio: SocketIO=None):
         super().__init__(name, socketio)
-        self.__name__ = "PromptAgent"
+        self.category = "PromptAgent"
         self.llm_type = llm_type
         self.socketio = socketio
         self.client = LLMQueryClient(provider=self.llm_type)
@@ -66,7 +76,7 @@ class AssistAgent(PromptAgent):
     """
     def __init__(self, name: str, llm_type: str, socketio: SocketIO=None):
         super().__init__(name, llm_type, socketio=socketio)
-        self.__name__ = "AssistAgent"
+        self.category = "AssistAgent"
 
     def generate_prompt(self, data: Any) -> str:
         # 根据数据生成提示

@@ -5,14 +5,9 @@ eventlet.monkey_patch()
 from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 import threading
-
-from streamllm import DSLParser
-from streamllm import StreamManager
-from streamllm import AgentStore
-from streamllm import agent_handler_factory
-from streamllm import PromptAgent
-
 from typing import Any
+from streamllm import DSLParser, StreamManager, AgentStore, PromptAgent
+
 
 # Flask应用和SocketIO初始化
 app = Flask(__name__)
@@ -28,6 +23,7 @@ dsl_parser = DSLParser(config_path="config.yaml", stream_manager=stream_manager,
 
 # 解析初始配置
 dsl_parser.parse()
+# nodes, links = dsl_parser.parse()
 
 # 定义Flask路由
 @app.route('/')
@@ -88,8 +84,7 @@ def add_agent():
         for stream_name in subscribed_streams:
             stream = stream_manager.get_stream(stream_name)
             if stream:
-                handler = agent_handler_factory(agent)
-                stream.register_handler(handler)
+                agent.subscribe(stream)
         return jsonify({'status': 'success', 'agent': agent.name})
     except ValueError as e:
         return jsonify({'status': 'error', 'message': str(e)}), 400
@@ -117,8 +112,7 @@ def add_custom_agent():
         for stream_name in subscribed_streams:
             stream = stream_manager.get_stream(stream_name)
             if stream:
-                handler = agent_handler_factory(agent)
-                stream.register_handler(handler)
+                agent.subscribe(stream)
         return jsonify({'status': 'success', 'agent': agent.name})
     except ValueError as e:
         return jsonify({'status': 'error', 'message': str(e)}), 400
@@ -175,8 +169,7 @@ def subscribe_stream():
     agent = agent_store.get_agent(agent_name)
     if not stream or not agent:
         return jsonify({'status': 'error', 'message': 'Stream or agent does not exist.'}), 404
-    handler = agent_handler_factory(agent)
-    stream.register_handler(handler)
+    agent.subscribe(stream)
     return jsonify({'status': 'success', 'message': f'Agent {agent_name} subscribed to stream {stream_name}.'})
 
 
@@ -195,72 +188,25 @@ def emit_data():
     threading.Thread(target=stream.emit, args=(payload,)).start()
     return jsonify({'status': 'success', 'message': f'Data emitted to stream {stream_name}.'})
 
-### ---------- Emit 相关的 API 端点 ---------- ###
+### ---------- Config 相关的 API 端点 ---------- ###
 # 从配置文件加载Graph
-@app.route('/load_graph', methods=['POST'])
+@app.route('/load_graph', methods=['GET'])
 def load_graph():
     nodes, links = dsl_parser.parse()
-    # get name
-    nodes_name = [node.name for node in nodes]
-    links_name = [(link[0].name, link[1].name) for link in links]
-    return jsonify({'status': 'success', 'nodes': nodes_name, 'links': links_name})
+    # print(nodes)
+    # print(links)
+    # nodes_name = [node.name for node in nodes]
+    # links_name = [(link[0].name, link[1].name) for link in links]
+    return jsonify({'status': 'success', 'nodes': nodes, 'links': links})
 
-### ---------- Handler 相关的 API 端点 ---------- ###
-@app.route('/add_agent_handler', methods=['POST'])
-def add_handler():
+# 更新配置
+@app.route('/update_config', methods=['POST'])
+def update_config():
     data = request.json
-    stream_name = data.get('stream')
-    agent_name = data.get('agent')
-    if not stream_name or not agent_name:
-        return jsonify({'status': 'error', 'message': 'Stream name and agent name are required.'}), 400
-    stream = stream_manager.get_stream(stream_name)
-    agent = agent_store.get_agent(agent_name)
-    if not stream or not agent:
-        return jsonify({'status': 'error', 'message': 'Stream or agent does not exist.'}), 404
-    handler = agent_handler_factory(agent)
-    stream.register_handler(handler)
-    return jsonify({'status': 'success', 'message': f'Handler added to stream {stream_name}.'})
-
-@app.route('/add_normal_handler', methods=['POST'])
-def add_normal_handler():
-    data = request.json
-    stream_name = data.get('stream')
-    handler_name = data.get('handler')
-    if not stream_name or not handler_name:
-        return jsonify({'status': 'error', 'message': 'Stream name and handler name are required.'}), 400
-    stream = stream_manager.get_stream(stream_name)
-    if not stream:
-        return jsonify({'status': 'error', 'message': 'Stream does not exist.'}), 404
-    # Assuming handler_name corresponds to a callable handler function
-    try:
-        print(handler_name)
-        print(globals())
-        handler = globals()[handler_name]
-        stream.register_handler(handler)
-        return jsonify({'status': 'success', 'message': f'Handler {handler_name} added to stream {stream_name}.'})
-    except KeyError:
-        return jsonify({'status': 'error', 'message': f'Handler {handler_name} does not exist.'}), 404
-
-@app.route('/remove_handler', methods=['POST'])
-def remove_handler():
-    data = request.json
-    stream_name = data.get('stream')
-    handler_name = data.get('handler')
-    if not stream_name or not handler_name:
-        return jsonify({'status': 'error', 'message': 'Stream name and handler name are required.'}), 400
-    stream = stream_manager.get_stream(stream_name)
-    if not stream:
-        return jsonify({'status': 'error', 'message': 'Stream does not exist.'}), 404
-    handler = next((h for h in stream.handlers if h.__name__ == handler_name), None)
-    if not handler:
-        return jsonify({'status': 'error', 'message': 'Handler does not exist.'}), 404
-    stream.unregister_handler(handler)
-    return jsonify({'status': 'success', 'message': f'Handler {handler_name} removed from stream {stream_name}.'})
-
-@app.route('/get_built_in_handlers', methods=['GET'])
-def get_built_in_handlers():
-    built_in_handlers = ["text_handler", "image_handler", "logging_handler", "data_filter_handler"]
-    return jsonify({'handlers': built_in_handlers})
+    new_config = data.get('config')
+    dsl_parser.update_config(new_config)
+    config = dsl_parser.get_config()
+    return jsonify({'status': 'success', 'config': config})
 
 
 # SocketIO事件

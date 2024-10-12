@@ -1,7 +1,7 @@
 from streamllm.framework.stream_manager import StreamManager
 from streamllm.framework.agent import AssistAgent
 from streamllm.framework.agent_store import AgentStore
-from streamllm.framework.handler import text_handler, image_handler, forwarding_handler_factory
+from streamllm.framework.handler_agent import TextHandlerAgent, ImageHandlerAgent, ForwardingHandlerAgent
 
 # 使用框架
 if __name__ == "__main__":
@@ -24,17 +24,20 @@ if __name__ == "__main__":
     agent_store.add_agent(agent2)
     agent_store.add_agent(agent3)
 
+
     # 注册 Handlers 和 Agents 到 Streams
-    text_stream.register_handler(text_handler)
+    text_handler_agent = TextHandlerAgent("TextHandler")
+    text_handler_agent.subscribe(text_stream)
     text_stream.register_handler(agent1.process_data)
     text_stream.register_handler(agent2.process_data)
 
-    image_stream.register_handler(image_handler)
+    image_handler_agent = ImageHandlerAgent("ImageHandler")
+    image_handler_agent.subscribe(image_stream)
     image_stream.register_handler(agent1.process_data)
 
     # 设置流之间的连接：text_stream -> analytics_stream
-    forwarding_handler = forwarding_handler_factory(analytics_stream)
-    text_stream.register_handler(forwarding_handler)
+    forwarding_handler_agent = ForwardingHandlerAgent("ForwardingHandler", analytics_stream)
+    forwarding_handler_agent.subscribe(text_stream)
 
     # 在 analytics_stream 注册 Agent3 处理数据
     analytics_stream.register_handler(agent3.process_data)

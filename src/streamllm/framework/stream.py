@@ -9,17 +9,17 @@ class Stream:
     def __init__(self, name: str, socketio: SocketIO):
         self.name = name
         self.handlers: List[Callable[[Any], None]] = []
-        self.connected_streams: List['Stream'] = []
+        self.connections: List['Stream'] = []
         self.socketio = socketio
 
     def register_handler(self, handler: Callable[[Any], None]):
         self.handlers.append(handler)
-        print(f"Handler {handler.__name__} registered to stream {self.name}")
+        print(f"Handler {handler.__name__} registered to Stream {self.name}")
 
     def unregister_handler(self, handler: Callable[[Any], None]):
         if handler in self.handlers:
             self.handlers.remove(handler)
-            print(f"Handler {handler.__name__} unregistered from stream {self.name}")
+            print(f"Handler {handler.__name__} unregistered from Stream {self.name}")
         else:
             print(f"Handler {handler.__name__} not found in stream {self.name}")
 
@@ -44,7 +44,7 @@ class Stream:
             handler(data)
 
         # 将数据传递到连接的流 (和 forward功能有重叠)
-        for stream in self.connected_streams:
+        for stream in self.connections:
             print(f"Stream {self.name} forwarding data to stream {stream.name}")
 
             if self.socketio:
@@ -66,11 +66,11 @@ class Stream:
     新增的方法包括connect_stream和disconnect_stream，用于管理流之间的连接。
     """
     def connect_stream(self, stream: 'Stream'):
-        if stream not in self.connected_streams:
-            self.connected_streams.append(stream)
+        if stream not in self.connections:
+            self.connections.append(stream)
             print(f"Stream {self.name} connected to stream {stream.name}")
 
     def disconnect_stream(self, stream: 'Stream'):
-        if stream in self.connected_streams:
-            self.connected_streams.remove(stream)
+        if stream in self.connections:
+            self.connections.remove(stream)
             print(f"Stream {self.name} disconnected from stream {stream.name}")

@@ -1,51 +1,33 @@
 streams:
 - name: text_stream
-  connections:
-  - analytics_stream
 - name: image_stream
   connections:
-  - analytics_stream
-- name: analytics_stream
-- name: livestream
-  connections:
   - text_stream
-  - image_stream
+- name: analytics_stream
+- name: text_streamaaaa
+  connections:
   - analytics_stream
+- name: text_stream111
+- name: text_stream222
 agents:
 - name: Agent1
   category: AssistAgent
   llm_type: qwen
   subscribed_streams:
-  - analytics_stream
-  - image_stream
   - text_stream
-  - livestream
+  - image_stream
 - name: Agent2
   category: AssistAgent
   llm_type: qwen
   subscribed_streams:
-  - image_stream
-  - livestream
   - text_stream
 - name: Agent3
   category: AssistAgent
   llm_type: qwen
   subscribed_streams:
-  - image_stream
   - analytics_stream
-- name: Teacher1
+- name: TextAgent
   category: AssistAgent
   llm_type: qwen
-  subscribed_streams:
-  - text_stream
-  - analytics_stream
-- name: '111'
-  category: TextHandlerAgent
-  llm_type: aa
-  subscribed_streams:
-  - text_stream
-- name: '11'
-  category: ImageHandlerAgent
-  llm_type: qq
   subscribed_streams:
   - analytics_stream

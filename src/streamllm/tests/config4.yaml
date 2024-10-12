@@ -1,10 +1,6 @@
 streams:
   - name: text_stream
-    handlers:
-      - type: text_handler
-      - type: agent_handler
-    connections:
-      - target: analytics_stream
+    connections: [ analytics_stream ]
 
   - name: analytics_stream
 

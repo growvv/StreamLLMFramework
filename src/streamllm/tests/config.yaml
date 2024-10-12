@@ -5,19 +5,15 @@ streams:
       - type: agent_handler
       - type: forwarding_handler
         target: analytics_stream
-    connections:
-      - target: analytics_stream
 
   - name: image_stream
     handlers:
       - type: image_handler
       - type: agent_handler
-    connections: []
 
   - name: analytics_stream
     handlers:
       - type: agent_handler
-    connections: []
 
 agents:
   - name: Agent1
