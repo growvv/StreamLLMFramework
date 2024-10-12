@@ -1,7 +1,7 @@
-from stream_manager import StreamManager
-from agent import Agent
-from agent_store import AgentStore
-from handler import text_handler, image_handler, forwarding_handler_factory
+from streamllm.framework.stream_manager import StreamManager
+from streamllm.framework.agent import AssistAgent
+from streamllm.framework.agent_store import AgentStore
+from streamllm.framework.handler import text_handler, image_handler, forwarding_handler_factory
 
 # 使用框架
 if __name__ == "__main__":
@@ -15,9 +15,9 @@ if __name__ == "__main__":
     analytics_stream = stream_manager.create_stream("analytics_stream")  # 新增一个分析流
 
     # 创建 Agents
-    agent1 = Agent(name="Agent1", llm_type="qwen")
-    agent2 = Agent(name="Agent2", llm_type="qwen")
-    agent3 = Agent(name="Agent3", llm_type="qwen")  # 新增一个Agent
+    agent1 = AssistAgent(name="Agent1", llm_type="qwen")
+    agent2 = AssistAgent(name="Agent2", llm_type="qwen")
+    agent3 = AssistAgent(name="Agent3", llm_type="qwen")  # 新增一个Agent
 
     # 添加 Agents 到 AgentStore
     agent_store.add_agent(agent1)

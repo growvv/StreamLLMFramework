@@ -1,0 +1,59 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>流式多Agent多模态数据处理框架</title>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js" integrity="sha512-BLVfFyaxQpSlVuIyLXapBn4PDAOSj/H9OmGX+HSSV/0Dyo/2qXkdkKcYCr+eIgqvG+8Xy2j04eSGL1jmKVIC7A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <!-- <script src="static/js/main.js"></script> -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</head>
+<body>
+    <h1>流式多Agent多模态数据处理框架</h1>
+
+    <div id="config">
+        <h2>配置管理</h2>
+        <div class="form-section">
+            <h3>创建 Stream</h3>
+            <input type="text" id="stream_name" placeholder="Stream 名称">
+            <button onclick="addStream()">创建 Stream</button>
+        </div>
+        <div class="form-section">
+            <h3>创建 Agent</h3>
+            <select id="create_agent_select">
+                <option value="">选择 Agent</option>
+            </select>
+            <input type="text" id="create_agents_name" placeholder="Agent 名称">
+            <input type="text" id="create_agents_llm_type" placeholder="LLM TYPE">
+            <button onclick="addAgent()">创建 Agent</button>
+        </div>
+        <div class="form-section"></div>
+            <h3>订阅管理</h3>
+            <select id="subscribe_stream_select">
+                <option value="">选择 Stream</option>
+                <!-- 动态填充Stream选项 -->
+            </select>
+            <select id="subscribe_agent_select">
+                <option value="">选择 Agent</option>
+                <!-- 动态填充Agent选项 -->
+            </select>
+            <button onclick="subscribeStreamToAgent()">订阅</button>
+        </div>
+        <div class="form-section">
+            <h3>发射数据</h3>
+            <select id="emit_stream_select">
+                <option value="">选择 Stream</option>
+                <!-- 动态填充Stream选项 -->
+            </select>
+            <input type="text" id="emit_data" placeholder="数据">
+            <button onclick="emitData()">发射数据</button>
+        </div>
+    </div>
+
+    <div id="graph">
+        <!-- D3.js 图表将渲染在此 -->
+    </div>
+</body>
+</html>

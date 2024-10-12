@@ -21,17 +21,20 @@ streams:
 
 agents:
   - name: Agent1
+    category: "AssistAgent"
     llm_type: "qwen"
     subscribed_streams:
       - text_stream
       - image_stream
 
   - name: Agent2
+    category: "AssistAgent"
     llm_type: "qwen"
     subscribed_streams:
       - text_stream
 
   - name: Agent3
+    category: "AssistAgent"
     llm_type: "qwen"
     subscribed_streams:
       - analytics_stream

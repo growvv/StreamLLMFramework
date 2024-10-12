@@ -10,6 +10,7 @@ streams:
 
 agents:
   - name: Agent1
+    category: "AssistAgent"
     llm_type: "qwen"
     subscribed_streams:
       - analytics_stream

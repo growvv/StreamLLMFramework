@@ -1,11 +1,11 @@
-from agent import Agent
-from stream import Stream
-from stream_manager import StreamManager
-from handler import text_handler, image_handler
+from streamllm.framework.handler import text_handler, image_handler
+from streamllm.framework.agent import AssistAgent
+from streamllm.framework.stream_manager import StreamManager
+from streamllm.framework.stream import Stream
 
 # 创建Agents
-agent1 = Agent(name="DataAnalyzer", llm_type="qwen")
-agent2 = Agent(name="MaintanceAnalyzer", llm_type="qwen")
+agent1 = AssistAgent(name="DataAnalyzer", llm_type="qwen")
+agent2 = AssistAgent(name="MaintanceAnalyzer", llm_type="qwen")
 
 stream_manager = StreamManager()
 text_stream = stream_manager.create_stream("text")

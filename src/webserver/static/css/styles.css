@@ -1,0 +1,17 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+#config {
+    margin-bottom: 20px;
+}
+
+.form-section {
+    margin-bottom: 15px;
+}
+
+#graph {
+    border: 1px solid #ccc;
+    width: 100%;
+    height: 600px;
+}

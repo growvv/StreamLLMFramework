@@ -1,10 +1,13 @@
 import yaml
-from stream_manager import StreamManager
-from agent import Agent
-from handler import text_handler, image_handler, forwarding_handler_factory, agent_handler_factory
-from agent_store import AgentStore
-from typing import Dict
-from flask_socketio import SocketIO
+from typing import Dict, Union, List, Tuple
+from .stream_manager import StreamManager
+from .handler import text_handler, image_handler, forwarding_handler_factory, agent_handler_factory, logging_handler
+from .agent_store import AgentStore
+from .agent import Agent
+from .stream import Stream
+
+Node = Union[Stream, Agent]
+Link = Tuple[Node, Node]
 
 # DSL解析器
 class DSLParser:
@@ -21,18 +24,26 @@ class DSLParser:
         self.handlers_map = {
             "text_handler": text_handler,
             "image_handler": image_handler,
-            # "agent_handler" will be handled separately
+            "logging_handler": logging_handler,
+            # "data_filter_handler" 需要特定参数
+            # "agent_handler" 将在Agents创建后处理
             "forwarding_handler": forwarding_handler_factory
         }
 
-    def parse(self):
+    def parse(self) -> Tuple[List[Node], List[Link]]:
         with open(self.config_path, 'r', encoding='utf-8') as file:
             config = yaml.safe_load(file)
+
+        nodes = []  # 存储所有节点
+        links = []  # 存储所有边
 
         # 创建Streams
         # 遍历配置中的 streams，为每个流创建 Stream 实例，并注册相应的处理器。
         for stream_conf in config.get('streams', []):
             stream = self.stream_manager.get_stream(stream_conf['name'])
+            if not stream:
+                stream = self.stream_manager.create_stream(stream_conf['name'])
+                nodes.append(stream)
 
             for handler_conf in stream_conf.get('handlers', []):
                 handler_type = handler_conf['type']
@@ -44,8 +55,10 @@ class DSLParser:
                     target_stream = self.stream_manager.get_stream(target_stream_name)
                     if not target_stream:
                         target_stream = self.stream_manager.create_stream(target_stream_name)
+                        nodes.append(target_stream)
                     handler = forwarding_handler_factory(target_stream)
                     stream.register_handler(handler)
+                    links.append((stream, target_stream))
                 else:
                     handler = self.handlers_map.get(handler_type)
                     if handler:
@@ -57,14 +70,21 @@ class DSLParser:
             for connection in stream_conf.get('connections', []):
                 target_stream_name = connection['target']
                 target_stream = self.stream_manager.get_stream(target_stream_name)
+                if not target_stream:
+                    target_stream = self.stream_manager.create_stream(target_stream_name)
+                    nodes.append(target_stream)
                 stream.connect_stream(target_stream)
+                links.append((stream, target_stream))
                 # target_stream.connect_stream(stream)  # 双向连接, 会导致数据循环
 
 
         # 创建Agents
         for agent_conf in config.get('agents', []):
-            # agent = Agent(name=agent_conf['name'], llm_type=agent_conf['llm_type'], socketio=self.socketio)
-            agent = self.agent_store.create_agent(name=agent_conf['name'], llm_type=agent_conf['llm_type'])
+            # agent = self.agent_store.create_agent(name=agent_conf['name'], category=agent_conf['category'], llm_type=agent_conf['llm_type'])
+            agent = self.agent_store.get_agent(agent_conf['name'])
+            if not agent:
+                agent = self.agent_store.create_agent(name=agent_conf['name'], category=agent_conf['category'], llm_type=agent_conf['llm_type'])
+                nodes.append(agent)
             self.agent_store.add_agent(agent)
 
         # 注册Agent Handlers
@@ -76,9 +96,14 @@ class DSLParser:
                 continue
             for stream_name in agent_conf.get('subscribed_streams', []):
                 stream = self.stream_manager.get_stream(stream_name)
-                if stream:
-                    handler = agent_handler_factory(agent)  # 根据配置选择同步或异步处理器
-                    stream.register_handler(handler)
+                if not stream:  # Stream不存在, 跳过
+                    print(f"Stream {stream_name} not found for agent {agent_conf['name']}")
+                    continue
+                handler = agent_handler_factory(agent)  # 根据配置选择同步或异步处理器
+                stream.register_handler(handler)
+                links.append((stream, agent))
+
+        return nodes, links
 
     def update_config(self, new_config: Dict):
         # 这里可以实现动态更新配置的逻辑

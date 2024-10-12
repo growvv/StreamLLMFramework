@@ -1,4 +1,4 @@
-from stream import Stream
+from .stream import Stream
 from typing import Any
 from flask_socketio import SocketIO
 
@@ -13,15 +13,17 @@ class StreamManager:
 
     def create_stream(self, name: str) -> Stream:
         if name in self.streams:
-            raise ValueError(f"Stream {name} already exists.")
+            print(f"Stream {name} already exists.")
+            return self.streams[name]
         stream = Stream(name, self.socketio)
         self.streams[name] = stream
         print(f"Stream {name} created.")
         return stream
 
     def get_stream(self, name: str) -> Stream:
-        if name not in self.streams:
-            return self.create_stream(name)
+        # if name not in self.streams:
+        #     # return self.create_stream(name)
+        #     return None
         return self.streams.get(name)
 
     def delete_stream(self, name: str):
