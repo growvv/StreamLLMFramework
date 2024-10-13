@@ -12,38 +12,53 @@ streams:
 
 agents:
   - name: DataCleanerAgent
-    category: AssistAgent
-    llm_type: qwen
+    llm_api_key: "your-openai-api-key"
     subscribed_streams:
-      - RawDataStream
-      - EquipmentRegistrationStream
-      - OperationLogsStream
-      - DutyTableStream
-      - OperationRecordsStream
+      - name: RawDataStream
+        use_vector_store: false
+    output_streams:
+      - CleanDataStream  # 默认输出 Stream，同名 Agent 不显示
 
   - name: TrendAnalyzerAgent
-    category: TextHandlerAgent
+    llm_api_key: "your-openai-api-key"
     subscribed_streams:
-      - CleanDataStream
-
-  - name: EstimatorAgent
-    category: TextHandlerAgent
-    subscribed_streams:
+      - name: CleanDataStream
+        use_vector_store: true
+    output_streams:
       - TrendAnalysisStream
 
-  - name: ReportGeneratorAgent
-    category: TextHandlerAgent
+  - name: EstimatorAgent
+    llm_api_key: "your-openai-api-key"
     subscribed_streams:
+      - name: TrendAnalysisStream
+        use_vector_store: true
+    output_streams:
       - EstimationStream
 
-  - name: PredictiveMaintenanceAgent
-    category: TextHandlerAgent
+  - name: ReportGeneratorAgent
+    llm_api_key: "your-openai-api-key"
     subscribed_streams:
-      - OperationLogsStream
-      - EquipmentRegistrationStream
+      - name: EstimationStream
+        use_vector_store: false
+    output_streams:
+      - ReportStream
+
+  - name: PredictiveMaintenanceAgent
+    llm_api_key: "your-openai-api-key"
+    subscribed_streams:
+      - name: OperationLogsStream
+        use_vector_store: true
+      - name: EquipmentRegistrationStream
+        use_vector_store: false
+    output_streams:
+      - PredictiveMaintenanceOutputStream  # 默认输出 Stream
 
   - name: PersonnelPerformanceAgent
-    category: TextHandlerAgent
+    llm_api_key: "your-openai-api-key"
     subscribed_streams:
-      - DutyTableStream
-      - OperationRecordsStream
+      - name: DutyTableStream
+        use_vector_store: false
+      - name: OperationRecordsStream
+        use_vector_store: false
+    output_streams:
+      - PersonnelPerformanceOutputStream  # 默认输出 Stream
