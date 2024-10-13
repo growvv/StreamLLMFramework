@@ -39,10 +39,60 @@ Agent 可以订阅同一个或不同的 Stream，并独立处理各自感兴趣�
 用户也可以在WEB UI上进行操作，添加Stream和Agent，实时渲染Graph。
 Web操作和配置文件是双向同步的，对Web的操作都是持久化到配置文件中
 
+![UI界面](docs/pic2.png)
+
+```yaml
+streams:
+- name: RawDataStream
+- name: EquipmentRegistrationStream
+- name: OperationLogsStream
+- name: DutyTableStream
+- name: OperationRecordsStream
+- name: CleanDataStream
+- name: TrendAnalysisStream
+- name: EstimationStream
+- name: ReportStream
+agents:
+- name: DataCleanerAgent
+  category: AssistAgent
+  llm_type: qwen
+  subscribed_streams:
+  - OperationRecordsStream
+  - EquipmentRegistrationStream
+  - RawDataStream
+  - OperationLogsStream
+  - DutyTableStream
+  - ReportStream
+- name: TrendAnalyzerAgent
+  category: TextHandlerAgent
+  subscribed_streams:
+  - CleanDataStream
+- name: EstimatorAgent
+  category: TextHandlerAgent
+  subscribed_streams:
+  - TrendAnalysisStream
+- name: ReportGeneratorAgent
+  category: TextHandlerAgent
+  subscribed_streams:
+  - EstimationStream
+- name: PredictiveMaintenanceAgent
+  category: TextHandlerAgent
+  subscribed_streams:
+  - OperationLogsStream
+  - EquipmentRegistrationStream
+- name: PersonnelPerformanceAgent
+  category: TextHandlerAgent
+  subscribed_streams:
+  - DutyTableStream
+  - OperationRecordsStream
+```
+
 #### 数据流可视化界面
 实时展示数据在Streams之间的流动及其被Agents处理的过程。
 
 数据流过是节点（Stream/Agent）和连接都会有高亮的动画效果。
+
+![操作界面](docs/pic1.png)
 
 ### Todo
 功能点：
